@@ -1,0 +1,140 @@
+package Objects;
+
+// TASK 2a: class SCone builds a cone model
+public class SCone extends SObject {
+    private float radius;
+    private float height;
+    private int slices;
+    private int stacks;
+
+    public SCone() {
+        super();
+        init();
+        update();
+    }
+
+    public SCone(float radius, float height) {
+        super();
+        init();
+        this.radius = radius;
+        this.height = height;
+        update();
+    }
+
+    public SCone(float radius, int slices, int stacks, int height) {
+        super();
+        this.radius = radius;
+        this.slices = slices;
+        this.stacks = stacks;
+        this.height = height;
+        update();
+    }
+
+    private void init() {
+        this.radius = 1;
+        this.slices = 36;
+        this.stacks = 20;
+        this.height = 1.5f;
+    }
+
+    @Override
+    protected void genData() {
+        int i, j, k;
+        double deltaLong = (PI * 2) / slices; // sector step
+        // generate vertices coordinates, normal values and texture coordinates
+        numVertices = (slices + 1) * (stacks - 1) + 2;
+        vertices = new float[numVertices * 3];
+        normals = new float[numVertices * 3];
+        textures = new float[numVertices * 2];
+
+        // North Pole point
+        normals[0] = 0;
+        normals[1] = 0;
+        normals[2] = 1;
+        vertices[0] = 0;
+        vertices[1] = 0;
+        vertices[2] = height;
+        textures[0] = 0.5f;
+        textures[1] = 1.0f;
+        k = 1;
+
+        // vertices on the main body
+        for (i = 1; i < stacks; i++) {
+            for (j = 0; j <= slices; j++) {
+                normals[3 * k] = cos(deltaLong * j);
+                normals[3 * k + 1] = sin(deltaLong * j);
+                normals[3 * k + 2] = (-height) / 2;
+                vertices[3 * k] = radius * normals[3 * k];
+                vertices[3 * k + 1] = radius * normals[3 * k + 1];
+                vertices[3 * k + 2] = radius * normals[3 * k + 2];
+                textures[2 * k] = (float) j / slices;
+                textures[2 * k + 1] = 1 - (float) i / stacks;
+                k++;
+            }
+        }
+
+        // South Pole point
+        normals[3 * k] = 1;
+        normals[3 * k + 1] = 1;
+        normals[3 * k + 2] = 0;
+        vertices[3 * k] = radius;
+        vertices[3 * k + 1] = radius;
+        vertices[3 * k + 2] = 0;
+        textures[2 * k] = 0.5f;
+        textures[2 * k + 1] = 0.0f;
+        k++;
+
+        // generate indices for triangular mesh
+        numIndices = (stacks - 1) * slices * 6;
+        indices = new int[numIndices];
+        k = 0;
+        // North Pole, numElement: slices * 3
+        for (j = 1; j <= slices; j++) {
+            indices[k++] = 0;
+            indices[k++] = j;
+            indices[k++] = j + 1;
+        }
+        // main body, numElement: (stacks - 2) * slices * 6
+        for (i = 1; i < stacks - 1; i++) {
+            // each quad gives two triangles
+            for (j = 1; j <= slices; j++) {
+                // triangle one
+                indices[k++] = (i - 1) * (slices + 1) + j;
+                indices[k++] = i * (slices + 1) + j;
+                indices[k++] = i * (slices + 1) + j + 1;
+                // triangle two
+                indices[k++] = (i - 1) * (slices + 1) + j;
+                indices[k++] = i * (slices + 1) + j + 1;
+                indices[k++] = (i - 1) * (slices + 1) + j + 1;
+            }
+        }
+    }
+
+    public void setRadius(float radius) {
+        this.radius = radius;
+        updated = false;
+    }
+
+    public void setSlices(int slices) {
+        this.slices = slices;
+        updated = false;
+    }
+
+    public void setStacks(int stacks) {
+        this.stacks = stacks;
+        updated = false;
+    }
+
+    public float getRadius() {
+        return radius;
+    }
+
+    public int getSlices() {
+        return slices;
+    }
+
+    public int getStacks() {
+        return stacks;
+    }
+
+}
